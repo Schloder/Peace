@@ -2,121 +2,63 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import About from "./components/About/About";
-import Home from "./components/Home/Home";
-import Users from "./components/Users/Users";
-/*
-function App() {
-  const [database, setDatabase] = useState();
+import ÖtCsillagKocsma from "./components/ÖtCsillagKocsma/ÖtCsillagKocsma";
+import Italok from "./components/Italok/Italok";
+import Unatkozom from "./components/Unatkozom/Unatkozom";
+import Navigation from "./components/Navigation/Navigation";
+import ItalRészlet from "./components/ItalRészlet/ItalRészlet";
+
+export default function App() {
+  const [database, setDatabase] = useState([]);
+
+  async function fetchData() {
+    try {
+      const alcoholic = await axios.get(
+        "https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Alcoholic"
+      );
+      const nonAlcoholic = await axios.get(
+        "https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=Non_Alcoholic"
+      );
+      setDatabase([...alcoholic.data.drinks, ...nonAlcoholic.data.drinks]);
+    } catch (error) {
+      console.log("error", error);
+    }
+  }
+
   useEffect(() => {
-    const fetchData = async () => {
-      const result = await axios.get("http://localhost:4000");
-      setDatabase(result.data);
-    };
     fetchData();
   }, []);
-
-  const initialNumber = 0;
-  const [number, setNumber] = useState(initialNumber);
-
-  if (!database) {
-    return <p>Wait</p>;
-  }
-  // database === false, ugyanaz a felső sorral
-
-  console.log("ide", database.Database);
-
-  const { name, job, picture, description, like } = database[number];
-
-  const Title = (arg) => {
+  if (!database.length) {
     return (
-      <h1
-        style={{
-          color: "green",
-          backgroundColor: "lightblue",
-          textAlign: "center",
-        }}
-      >
-        {arg.text}
-      </h1>
+      <div className="heart-container">
+        <div className="lds-heart">
+          <div></div>
+        </div>
+      </div>
     );
-  };
+  }
 
-  return (
-    <div className="App">
-      <Title text={"Ala"} />
+  const drinkID = database.map((drinkID) => {
+    return drinkID.idDrink;
+  });
 
-      <h2>{job}</h2>
-      <img src={picture} border="0" height="auto" width="300px"></img>
-      <p>{description}</p>
-      <input type={"date"} id="appt" name="appt"></input>
-      <br />
-      <button
-        onClick={() => {
-          setDatabase(
-            database.map((profile) => {
-              if (profile.name === name) {
-                profile.like = !like;
-              }
-              return profile;
-            })
-          );
-        }}
-      >
-        {like ? "Unlike" : "Like"}
-      </button>
-      <br />
-
-      <button
-        onClick={() => {
-          if (0 !== number) setNumber(number - 1);
-        }}
-      >
-        Prev
-      </button>
-      <button
-        onClick={() => {
-          if (database.length - 1 !== number) setNumber(number + 1);
-        }}
-      >
-        Next
-      </button>
-    </div>
-  );
-}
-*/
-export default function App1() {
   return (
     <Router>
-      <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/about">About</Link>
-            </li>
-            <li>
-              <Link to="/users">Users</Link>
-            </li>
-          </ul>
-        </nav>
-
-        {/* A <Switch> looks through its children <Route>s and
-            renders the first one that matches the current URL. */}
-        <Switch>
-          <Route path="/about">
-            <About />
-          </Route>
-          <Route path="/users">
-            <Users />
-          </Route>
-          <Route path="/">
-            <Home />
-          </Route>
-        </Switch>
-      </div>
+      <Navigation />
+      <Switch>
+        <Route path="/italok/:id">
+          <ItalRészlet drinkID={database} />
+        </Route>
+        <Route path="/unatkozom">
+          <Unatkozom />
+        </Route>
+        <Route path="/italok">
+          <Italok />
+        </Route>
+        <Route path="/">
+          <ÖtCsillagKocsma database={database} />
+        </Route>
+      </Switch>
     </Router>
   );
 }
